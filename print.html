@@ -308,7 +308,7 @@
       </div>
       <div class="lomba-card semaphore" onclick="showPreview('semaphore')">
         <i class="fa-solid fa-flag"></i>
-        <strong>Sandi Semaphore</strong>
+        <strong>SESANDI (Semaphore-Morse)</strong>
         <small>Ketepatan & Kecepatan</small>
         <br/><button class="btn-print-card"><i class="fa-solid fa-print"></i> Cetak</button>
       </div>
@@ -508,7 +508,7 @@
       const putri = [...allData].filter(r=>(r.jenisRegu||"")==="Putri").sort((a,b)=>b.semaphore.total-a.semaphore.total);
       return `
         <div class="section-break">
-          <div class="section-title semaphore"><i class="fa-solid fa-flag"></i> Sandi Semaphore &mdash; Nilai Maks: 100</div>
+          <div class="section-title semaphore"><i class="fa-solid fa-flag"></i> SESANDI (Semaphore-Morse) &mdash; Nilai Maks: 100</div>
           ${buildSubTable(putra,"Putra","cat-s",["KETEPATAN JAWABAN<br/><small>max 60</small>","KECEPATAN JAWABAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.semaphore.ketepatan,r.semaphore.kecepatan,r.semaphore.total])}
           ${buildSubTable(putri,"Putri","cat-s",["KETEPATAN JAWABAN<br/><small>max 60</small>","KECEPATAN JAWABAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.semaphore.ketepatan,r.semaphore.kecepatan,r.semaphore.total])}
         </div>`;
@@ -566,7 +566,7 @@
       return "";
     }
     function typeLabel(t) {
-      const map = { all:"Rekap Semua Lomba", tongkat:"Kreasi Tongkat (Pionering)", semaphore:"Sandi Semaphore", yel:"Yel-Yel" };
+      const map = { all:"Rekap Semua Lomba", tongkat:"Kreasi Tongkat (Pionering)", semaphore:"SESANDI (Semaphore-Morse)", yel:"Yel-Yel" };
       return map[t] || t;
     }
 

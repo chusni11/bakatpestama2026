@@ -327,7 +327,7 @@ function renderPodium(data) {
   // Mini podium per lomba — tetap per regu (putra/putri terpisah)
   const lombas = [
     { key: "tongkat",   label: "Kreasi Tongkat",  icon: "fa-wand-magic-sparkles", color: "#1b4332", fn: r => r.tongkat.total },
-    { key: "semaphore", label: "Sandi Semaphore",  icon: "fa-flag",                color: "#1d3557", fn: r => r.semaphore.total },
+    { key: "semaphore", label: "SESANDI (Semaphore-Morse)",  icon: "fa-flag",                color: "#1d3557", fn: r => r.semaphore.total },
     { key: "yel",       label: "Yel-Yel",          icon: "fa-music",               color: "#7b2d00", fn: r => r.yel.total },
   ];
   document.getElementById("miniPodiumGrid").innerHTML = lombas.map(l => {
