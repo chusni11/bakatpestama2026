@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cetak Hasil Lomba</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark: #1a472a;
+      --green-mid:  #2d6a4f;
+      --gold:   #f4c430;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f4f0;
+      color: #1e2d1e;
+    }
+
+    /* ---- SCREEN ONLY ---- */
+    .screen-only {
+      max-width: 900px; margin: 0 auto; padding: 24px 16px;
+    }
+    .page-title {
+      font-size: 1.4rem; font-weight: 800; color: var(--green-dark);
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .lomba-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px; margin-bottom: 28px;
+    }
+    .lomba-card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      padding: 20px 16px; text-align: center; cursor: pointer;
+      border-top: 4px solid var(--green-mid);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .lomba-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .lomba-card.tongkat   { border-top-color: #1b4332; }
+    .lomba-card.semaphore { border-top-color: #1d3557; }
+    .lomba-card.yel       { border-top-color: #7b2d00; }
+    .lomba-card.all       { border-top-color: var(--green-dark); }
+    .lomba-card i { font-size: 2rem; margin-bottom: 10px; display: block; }
+    .lomba-card.tongkat   i { color: #1b4332; }
+    .lomba-card.semaphore i { color: #1d3557; }
+    .lomba-card.yel       i { color: #7b2d00; }
+    .lomba-card.all       i { color: var(--green-dark); }
+    .lomba-card strong { display: block; font-size: .9rem; font-weight: 700; }
+    .lomba-card small  { font-size: .75rem; color: #888; }
+    .btn-print-card {
+      margin-top: 12px; padding: 7px 16px;
+      background: var(--green-mid); color: #fff;
+      border: none; border-radius: 8px; font-size: .8rem; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .btn-print-card:hover { background: var(--green-dark); }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--green-mid); text-decoration: none; font-size: .88rem;
+      font-weight: 600; margin-bottom: 20px;
+    }
+    .back-link:hover { color: var(--green-dark); }
+    #loadingMsg { text-align: center; padding: 40px; color: #888; }
+
+    /* ---- PRINT PREVIEW AREA ---- */
+    #printPreview { display: none; }
+    .preview-wrap {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.1);
+      padding: 32px; margin-top: 8px;
+    }
+    .preview-actions {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .btn-do-print {
+      padding: 10px 24px; background: var(--green-dark); color: #fff;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 700;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-back-sel {
+      padding: 10px 20px; background: #f0f0f0; color: #555;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    /* ---- PRINT DOCUMENT STYLES ---- */
+    .print-doc { font-family: 'Poppins', sans-serif; }
+    .print-header { text-align: center; margin-bottom: 24px; border-bottom: 3px double #1a472a; padding-bottom: 16px; }
+    .print-header .org { font-size: .85rem; color: #555; margin-bottom: 4px; }
+    .print-header h1 { font-size: 1.3rem; font-weight: 800; color: var(--green-dark); line-height: 1.3; }
+    .print-header h2 { font-size: 1rem; font-weight: 700; margin-top: 4px; }
+    .print-header .sub { font-size: .8rem; color: #666; margin-top: 4px; }
+    .print-meta { display: flex; justify-content: space-between; font-size: .78rem; color: #666; margin-bottom: 16px; }
+
+    .print-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .print-table th {
+      background: var(--green-dark); color: #fff;
+      padding: 8px 10px; text-align: center; border: 1px solid #1a472a;
+    }
+    .print-table th.cat-t { background: #1b4332; }
+    .print-table th.cat-s { background: #1d3557; }
+    .print-table th.cat-m { background: #4a1942; }
+    .print-table th.cat-y { background: #7b2d00; }
+    .print-table td { padding: 7px 10px; border: 1px solid #ccc; text-align: center; }
+    .print-table tr:nth-child(even) td { background: #f7faf7; }
+    .print-table .rank-1 td { background: #fffde7 !important; font-weight: 700; }
+    .print-table .rank-2 td { background: #fafafa !important; }
+    .print-table .rank-3 td { background: #fff8f0 !important; }
+    .print-table .td-regu { text-align: left; font-weight: 700; }
+    .print-table .td-total { font-weight: 700; }
+    .print-table .td-rank { font-weight: 800; font-size: .95rem; }
+    .rank-gold   { color: #b8860b; }
+    .rank-silver { color: #666; }
+    .rank-bronze { color: #8b4513; }
+
+    .print-footer { margin-top: 32px; display: flex; justify-content: space-between; font-size: .8rem; }
+    .sign-box { text-align: center; width: 180px; }
+    .sign-box .sign-line { border-top: 1px solid #333; margin-top: 60px; padding-top: 4px; }
+
+    .section-break { margin-top: 36px; }
+    .section-title {
+      font-size: 1rem; font-weight: 700; padding: 8px 14px;
+      border-radius: 6px; color: #fff; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title.tongkat   { background: #1b4332; }
+    .section-title.semaphore { background: #1d3557; }
+    .section-title.yel       { background: #7b2d00; }
+
+    /* ---- PRINT MEDIA ---- */
+    @media print {
+      body { background: #fff !important; }
+      .screen-only { display: none !important; }
+      #printPreview { display: block !important; }
+      .preview-actions { display: none !important; }
+      .preview-wrap { box-shadow: none; padding: 0; border-radius: 0; }
+      .print-table th, .print-table td { font-size: .75rem; padding: 5px 7px; }
+      .page-break { page-break-before: always; }
+    }
+
+    /* ---- SETTINGS CARD ---- */
+    .settings-card {
+      display: none;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      padding: 20px 24px; margin-bottom: 20px;
+      border-left: 4px solid #2d6a4f;
+    }
+    .settings-title {
+      font-size: .95rem; font-weight: 700; color: #1a472a;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .settings-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .settings-group { display: flex; flex-direction: column; gap: 5px; }
+    .settings-group label {
+      font-size: .78rem; font-weight: 600; color: #666;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .settings-group input {
+      padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px;
+      font-size: .88rem; font-family: 'Poppins', sans-serif; outline: none;
+      transition: border .2s;
+    }
+    .settings-group input:focus { border-color: #2d6a4f; }
+
+    /* ---- LOGIN OVERLAY ---- */
+    .print-login-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #1a472a, #2d6a4f);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+    .print-login-card {
+      background: #fff; border-radius: 20px;
+      padding: 44px 36px; width: 100%; max-width: 380px;
+      text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .print-login-card .login-logo { font-size: 2.8rem; color: #2d6a4f; margin-bottom: 12px; }
+    .print-login-card h2 { font-size: 1.4rem; font-weight: 700; color: #1a472a; }
+    .print-login-card p  { color: #888; font-size: .88rem; margin: 8px 0 20px; }
+    .print-input-group { position: relative; margin-bottom: 14px; }
+    .print-input-group i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #aaa; }
+    .print-input-group input {
+      width: 100%; padding: 11px 14px 11px 40px;
+      border: 2px solid #e0e0e0; border-radius: 10px;
+      font-size: .95rem; font-family: 'Poppins', sans-serif; outline: none;
+      transition: border .2s;
+    }
+    .print-input-group input:focus { border-color: #2d6a4f; }
+    .print-login-error {
+      display: none; align-items: center; gap: 8px;
+      background: #ffebee; color: #c62828;
+      border: 1px solid #ef9a9a; border-radius: 8px;
+      padding: 9px 12px; font-size: .84rem; font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .print-login-success {
+      display: none; align-items: center; gap: 8px;
+      background: #e8f5e9; color: #2e7d32;
+      border: 1px solid #a5d6a7; border-radius: 8px;
+      padding: 9px 12px; font-size: .84rem; font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .btn-print-login {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #2d6a4f, #1a472a);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: .95rem; font-weight: 700; cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity .2s;
+    }
+    .btn-print-login:hover { opacity: .9; }
+    .btn-print-login:disabled { opacity: .7; cursor: not-allowed; }
+    .print-back-link { display: block; margin-top: 14px; color: #aaa; font-size: .82rem; text-decoration: none; }
+    .print-back-link:hover { color: #2d6a4f; }
+    @keyframes shakePrint {
+      0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-8px); }
+      40%{ transform:translateX(8px); } 60%{ transform:translateX(-5px); } 80%{ transform:translateX(5px); }
+    }
+    .print-login-card.shake { animation: shakePrint .4s ease; }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- LOGIN CETAK -->
+  <div id="printLoginOverlay" class="print-login-overlay">
+    <div class="print-login-card" id="printLoginCard">
+      <div class="login-logo"><i class="fa-solid fa-print"></i></div>
+      <h2>Akses Cetak</h2>
+      <p>Masukkan password untuk mengakses menu cetak hasil lomba</p>
+      <div class="print-input-group">
+        <i class="fa-solid fa-key"></i>
+        <input type="password" id="printPwInput" placeholder="Password Cetak"
+               onkeydown="if(event.key==='Enter') doPrintLogin()" />
+      </div>
+      <div class="print-login-error" id="printLoginError">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="printLoginErrorMsg">Password salah!</span>
+      </div>
+      <div class="print-login-success" id="printLoginSuccess">
+        <i class="fa-solid fa-circle-check"></i> Akses diberikan! Memuat...
+      </div>
+      <button class="btn-print-login" id="btnPrintLogin" onclick="doPrintLogin()">
+        <span id="btnPrintContent"><i class="fa-solid fa-unlock"></i> Masuk</span>
+        <span id="btnPrintLoading" style="display:none"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...</span>
+      </button>
+      <a href="index.html" class="print-back-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Papan Nilai</a>
+    </div>
+  </div>
+
+  <!-- SCREEN: PILIH LOMBA -->
+  <div class="screen-only" id="selectorArea">
+    <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Papan Nilai</a>
+    <div class="page-title"><i class="fa-solid fa-print" style="color:var(--green-mid)"></i> Cetak Hasil Lomba</div>
+
+    <!-- PENGATURAN DOKUMEN -->
+    <div class="settings-card" id="settingsCard">
+      <div class="settings-title"><i class="fa-solid fa-gear"></i> Pengaturan Dokumen Cetak</div>
+      <div class="settings-grid">
+        <div class="settings-group">
+          <label><i class="fa-solid fa-location-dot"></i> Kota / Tempat</label>
+          <input type="text" id="setCota" placeholder="Lumajang" value="Lumajang" />
+        </div>
+        <div class="settings-group">
+          <label><i class="fa-solid fa-calendar-days"></i> Tanggal</label>
+          <input type="date" id="setTanggal" />
+        </div>
+        <div class="settings-group">
+          <label><i class="fa-solid fa-user-tie"></i> Nama Ketua Panitia</label>
+          <input type="text" id="setKetua" placeholder="Nama Ketua Panitia" />
+        </div>
+        <div class="settings-group">
+          <label><i class="fa-solid fa-user-check"></i> Nama Juri / Petugas</label>
+          <input type="text" id="setJuri" placeholder="Nama Juri / Petugas" />
+        </div>
+      </div>
+    </div>
+
+    <div id="loadingMsg"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data...</div>
+    <div class="lomba-grid" id="lombaGrid" style="display:none">
+      <div class="lomba-card all" onclick="showPreview('all')">
+        <i class="fa-solid fa-layer-group"></i>
+        <strong>Semua Lomba</strong>
+        <small>Rekap lengkap</small>
+        <br/><button class="btn-print-card"><i class="fa-solid fa-print"></i> Cetak</button>
+      </div>
+      <div class="lomba-card tongkat" onclick="showPreview('tongkat')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <strong>Kreasi Tongkat</strong>
+        <small>Pionering</small>
+        <br/><button class="btn-print-card"><i class="fa-solid fa-print"></i> Cetak</button>
+      </div>
+      <div class="lomba-card semaphore" onclick="showPreview('semaphore')">
+        <i class="fa-solid fa-flag"></i>
+        <strong>Sandi Semaphore</strong>
+        <small>Ketepatan & Kecepatan</small>
+        <br/><button class="btn-print-card"><i class="fa-solid fa-print"></i> Cetak</button>
+      </div>
+      <div class="lomba-card yel" onclick="showPreview('yel')">
+        <i class="fa-solid fa-music"></i>
+        <strong>Yel-Yel</strong>
+        <small>Kreatifitas & Kekompakan</small>
+        <br/><button class="btn-print-card"><i class="fa-solid fa-print"></i> Cetak</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT PREVIEW -->
+  <div id="printPreview">
+    <div class="screen-only" style="padding-top:0">
+      <div class="preview-actions">
+        <button class="btn-do-print" onclick="window.print()"><i class="fa-solid fa-print"></i> Cetak Sekarang</button>
+        <button class="btn-back-sel" onclick="backToSelector()"><i class="fa-solid fa-arrow-left"></i> Pilih Lomba Lain</button>
+      </div>
+    </div>
+    <div class="preview-wrap">
+      <div class="print-doc" id="printDoc"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwgXpvEmvjw9n2IzwmOIkIanip8YfhP-L-1a4Ys80CTdmLKAKbdSYwfbwqxmYiK5sCL/exec";
+    let allData = [];
+
+    // ---- PRINT LOGIN ----
+    async function doPrintLogin() {
+      const pw = document.getElementById("printPwInput").value;
+      if (!pw) { showPrintLoginMsg("error", "Password tidak boleh kosong."); return; }
+
+      setPrintLoginLoading(true);
+      hidePrintLoginMsg();
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "loginPrint", password: pw })
+        });
+        const json = await res.json();
+        if (json.success) {
+          grantPrintAccess();
+        } else {
+          setPrintLoginLoading(false);
+          showPrintLoginMsg("error", "Password salah! Silakan coba lagi.");
+          document.getElementById("printPwInput").select();
+        }
+      } catch (e) {
+        // fallback offline
+        if (pw === "cetak1234") {
+          grantPrintAccess();
+        } else {
+          setPrintLoginLoading(false);
+          showPrintLoginMsg("error", "Password salah! Silakan coba lagi.");
+          document.getElementById("printPwInput").select();
+        }
+      }
+    }
+
+    function grantPrintAccess() {
+      showPrintLoginMsg("success");
+      sessionStorage.setItem("printAuth", "true");
+      setTimeout(() => {
+        document.getElementById("printLoginOverlay").style.display = "none";
+        init();
+      }, 800);
+    }
+
+    function setPrintLoginLoading(on) {
+      document.getElementById("btnPrintLogin").disabled = on;
+      document.getElementById("btnPrintContent").style.display = on ? "none" : "inline-flex";
+      document.getElementById("btnPrintLoading").style.display = on ? "inline-flex" : "none";
+      document.getElementById("printPwInput").disabled = on;
+    }
+
+    function showPrintLoginMsg(type, msg) {
+      if (type === "success") {
+        document.getElementById("printLoginSuccess").style.display = "flex";
+        document.getElementById("printLoginError").style.display = "none";
+      } else {
+        document.getElementById("printLoginError").style.display = "flex";
+        document.getElementById("printLoginErrorMsg").textContent = msg;
+        document.getElementById("printLoginSuccess").style.display = "none";
+        const card = document.getElementById("printLoginCard");
+        card.classList.remove("shake");
+        void card.offsetWidth;
+        card.classList.add("shake");
+      }
+    }
+
+    function hidePrintLoginMsg() {
+      document.getElementById("printLoginError").style.display = "none";
+      document.getElementById("printLoginSuccess").style.display = "none";
+    }
+
+    // Cek session — kalau sudah login cetak, langsung masuk
+    if (sessionStorage.getItem("printAuth") === "true") {
+      document.getElementById("printLoginOverlay").style.display = "none";
+      init();
+    }
+
+    async function init() {
+      // Set default tanggal hari ini
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("setTanggal").value = today;
+
+      try {
+        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getData" }) });
+        const json = await res.json();
+        if (json.success) {
+          allData = json.data;
+          document.getElementById("loadingMsg").style.display = "none";
+          document.getElementById("settingsCard").style.display = "block";
+          document.getElementById("lombaGrid").style.display = "grid";
+        }
+      } catch (e) {
+        document.getElementById("loadingMsg").innerHTML =
+          '<i class="fa-solid fa-triangle-exclamation" style="color:#e53935"></i> Gagal memuat data.';
+      }
+    }
+
+    function showPreview(type) {
+      document.getElementById("selectorArea").style.display = "none";
+      document.getElementById("printPreview").style.display = "block";
+      document.getElementById("printDoc").innerHTML = buildDoc(type);
+      window.scrollTo(0, 0);
+    }
+
+    function backToSelector() {
+      document.getElementById("printPreview").style.display = "none";
+      document.getElementById("selectorArea").style.display = "block";
+    }
+
+    function buildDoc(type) {
+      // Ambil nilai dari form pengaturan
+      const kota    = document.getElementById("setCota").value.trim()    || "Lumajang";
+      const ketua   = document.getElementById("setKetua").value.trim()   || "_________________";
+      const juri    = document.getElementById("setJuri").value.trim()    || "_________________";
+      const tglRaw  = document.getElementById("setTanggal").value;
+      const tglFmt  = tglRaw
+        ? new Date(tglRaw + "T00:00:00").toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" })
+        : new Date().toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" });
+      const cetakFmt = new Date().toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" });
+
+      const header = `
+        <div class="print-header">
+          <div class="org">GERAKAN PRAMUKA</div>
+          <h1>NILAI BAKAT PESTAMA II 2026</h1>
+          <h2>${typeLabel(type)}</h2>
+          <div class="sub">Lomba Pramuka Tingkat Penggalang SMP Swasta Se-Kabupaten Lumajang</div>
+        </div>
+        <div class="print-meta">
+          <span>Tanggal cetak: ${cetakFmt}</span>
+          <span>Total Regu: ${allData.length}</span>
+        </div>`;
+
+      let body = "";
+      if (type === "all") {
+        body = buildSectionTongkat() + buildSectionSemaphore() + buildSectionYel();
+      } else if (type === "tongkat")   body = buildSectionTongkat();
+      else if (type === "semaphore")   body = buildSectionSemaphore();
+      else if (type === "yel")         body = buildSectionYel();
+
+      const footer = `
+        <div class="print-footer">
+          <div class="sign-box">
+            <div>Mengetahui,</div>
+            <div>Ketua Panitia</div>
+            <div class="sign-line">( ${ketua} )</div>
+          </div>
+          <div class="sign-box">
+            <div>${kota}, ${tglFmt}</div>
+            <div>Juri / Petugas</div>
+            <div class="sign-line">( ${juri} )</div>
+          </div>
+        </div>`;
+
+      return header + body + footer;
+    }
+
+    function buildSectionTongkat() {
+      const putra = [...allData].filter(r=>(r.jenisRegu||"Putra")==="Putra").sort((a,b)=>b.tongkat.total-a.tongkat.total);
+      const putri = [...allData].filter(r=>(r.jenisRegu||"")==="Putri").sort((a,b)=>b.tongkat.total-a.tongkat.total);
+      return `
+        <div class="section-break">
+          <div class="section-title tongkat"><i class="fa-solid fa-wand-magic-sparkles"></i> Kreasi Tongkat (Pionering) &mdash; Nilai Maks: 100</div>
+          ${buildSubTable(putra,"Putra","cat-t",["SIMPUL<br/><small>max 40</small>","KREATIFITAS<br/><small>max 30</small>","KEKUATAN<br/><small>max 20</small>","KERAPIAN<br/><small>max 10</small>","TOTAL<br/><small>max 100</small>"],r=>[r.tongkat.simpul,r.tongkat.kreatifitas,r.tongkat.kekuatan,r.tongkat.kerapian,r.tongkat.total])}
+          ${buildSubTable(putri,"Putri","cat-t",["SIMPUL<br/><small>max 40</small>","KREATIFITAS<br/><small>max 30</small>","KEKUATAN<br/><small>max 20</small>","KERAPIAN<br/><small>max 10</small>","TOTAL<br/><small>max 100</small>"],r=>[r.tongkat.simpul,r.tongkat.kreatifitas,r.tongkat.kekuatan,r.tongkat.kerapian,r.tongkat.total])}
+        </div>`;
+    }
+
+    function buildSectionSemaphore() {
+      const putra = [...allData].filter(r=>(r.jenisRegu||"Putra")==="Putra").sort((a,b)=>b.semaphore.total-a.semaphore.total);
+      const putri = [...allData].filter(r=>(r.jenisRegu||"")==="Putri").sort((a,b)=>b.semaphore.total-a.semaphore.total);
+      return `
+        <div class="section-break">
+          <div class="section-title semaphore"><i class="fa-solid fa-flag"></i> Sandi Semaphore &mdash; Nilai Maks: 100</div>
+          ${buildSubTable(putra,"Putra","cat-s",["KETEPATAN JAWABAN<br/><small>max 60</small>","KECEPATAN JAWABAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.semaphore.ketepatan,r.semaphore.kecepatan,r.semaphore.total])}
+          ${buildSubTable(putri,"Putri","cat-s",["KETEPATAN JAWABAN<br/><small>max 60</small>","KECEPATAN JAWABAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.semaphore.ketepatan,r.semaphore.kecepatan,r.semaphore.total])}
+        </div>`;
+    }
+
+    function buildSectionYel() {
+      const putra = [...allData].filter(r=>(r.jenisRegu||"Putra")==="Putra").sort((a,b)=>b.yel.total-a.yel.total);
+      const putri = [...allData].filter(r=>(r.jenisRegu||"")==="Putri").sort((a,b)=>b.yel.total-a.yel.total);
+      return `
+        <div class="section-break">
+          <div class="section-title yel"><i class="fa-solid fa-music"></i> Yel-Yel &mdash; Nilai Maks: 100</div>
+          ${buildSubTable(putra,"Putra","cat-y",["KREATIFITAS<br/><small>max 60</small>","KEKOMPAKAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.yel.kreatifitas,r.yel.kekompakan,r.yel.total])}
+          ${buildSubTable(putri,"Putri","cat-y",["KREATIFITAS<br/><small>max 60</small>","KEKOMPAKAN<br/><small>max 40</small>","TOTAL<br/><small>max 100</small>"],r=>[r.yel.kreatifitas,r.yel.kekompakan,r.yel.total])}
+        </div>`;
+    }
+
+    function buildSubTable(data, jenis, catClass, headers, valFn) {
+      const isBoy = jenis === "Putra";
+      const labelStyle = isBoy
+        ? "background:#e3f2fd;color:#1565c0;border-left:4px solid #1565c0"
+        : "background:#fce4ec;color:#c62828;border-left:4px solid #c62828";
+      const icon = isBoy ? "🔵" : "🔴";
+      if (!data.length) return `<div style="padding:8px 12px;font-size:.8rem;color:#888;margin-bottom:8px">${icon} ${jenis}: Belum ada data.</div>`;
+      return `
+        <div style="${labelStyle};padding:5px 12px;border-radius:6px;font-size:.8rem;font-weight:700;margin:10px 0 6px;display:inline-block">${icon} REGU ${jenis.toUpperCase()}</div>
+        <table class="print-table" style="margin-bottom:14px">
+          <thead><tr>
+            <th style="width:36px">RANK</th>
+            <th>NOMOR REGU</th>
+            <th>SEKOLAH</th>
+            ${headers.map((h,i) => `<th class="${i===headers.length-1?catClass+' td-total':catClass}">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${data.map((r,i) => `
+            <tr class="rank-${i+1}">
+              <td class="td-rank ${rankColor(i+1)}">${rankSymbol(i+1)}</td>
+              <td class="td-regu">${r.nomorRegu}</td>
+              <td style="font-size:.75rem;color:#555">${r.namaSekolah||'-'}</td>
+              ${valFn(r).map((v,vi) => `<td class="${vi===valFn(r).length-1?'td-total':''}">${v}</td>`).join("")}
+            </tr>`).join("")}
+          </tbody>
+        </table>`;
+    }
+
+    function rankSymbol(r) {
+      if (r === 1) return "🥇 1";
+      if (r === 2) return "🥈 2";
+      if (r === 3) return "🥉 3";
+      return r;
+    }
+    function rankColor(r) {
+      if (r === 1) return "rank-gold";
+      if (r === 2) return "rank-silver";
+      if (r === 3) return "rank-bronze";
+      return "";
+    }
+    function typeLabel(t) {
+      const map = { all:"Rekap Semua Lomba", tongkat:"Kreasi Tongkat (Pionering)", semaphore:"Sandi Semaphore", yel:"Yel-Yel" };
+      return map[t] || t;
+    }
+
+    // init() dipanggil setelah login berhasil
+  </script>
+</body>
+</html>

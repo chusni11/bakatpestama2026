@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Form Penilaian Lapangan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-dark: #1a472a;
+      --green-mid:  #2d6a4f;
+      --green-light:#52b788;
+    }
+    body { font-family: 'Poppins', sans-serif; background: #f0f4f0; color: #1e2d1e; }
+
+    /* ============ SCREEN UI ============ */
+    .screen-wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+    .page-title  { font-size: 1.3rem; font-weight: 800; color: var(--green-dark); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .page-sub    { font-size: .85rem; color: #777; margin-bottom: 24px; }
+    .back-link   { display: inline-flex; align-items: center; gap: 6px; color: var(--green-mid); text-decoration: none; font-size: .88rem; font-weight: 600; margin-bottom: 18px; }
+    .back-link:hover { color: var(--green-dark); }
+
+    /* Settings card */
+    .settings-card {
+      background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      padding: 20px 24px; margin-bottom: 20px; border-left: 4px solid var(--green-mid);
+    }
+    .settings-title { font-size: .95rem; font-weight: 700; color: var(--green-dark); display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .settings-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .sg { display: flex; flex-direction: column; gap: 5px; }
+    .sg label { font-size: .78rem; font-weight: 600; color: #666; display: flex; align-items: center; gap: 5px; }
+    .sg input, .sg select {
+      padding: 9px 12px; border: 2px solid #e0e0e0; border-radius: 8px;
+      font-size: .88rem; font-family: 'Poppins', sans-serif; outline: none; transition: border .2s;
+    }
+    .sg input:focus, .sg select:focus { border-color: var(--green-mid); }
+
+    /* Lomba selector */
+    .lomba-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .lomba-card {
+      background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08);
+      padding: 18px 14px; text-align: center; cursor: pointer;
+      border-top: 4px solid var(--green-mid); transition: transform .15s, box-shadow .15s;
+    }
+    .lomba-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .lomba-card.tongkat   { border-top-color: #1b4332; }
+    .lomba-card.semaphore { border-top-color: #1d3557; }
+    .lomba-card.yel       { border-top-color: #7b2d00; }
+    .lomba-card.all       { border-top-color: var(--green-dark); }
+    .lomba-card i { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+    .lomba-card.tongkat   i { color: #1b4332; }
+    .lomba-card.semaphore i { color: #1d3557; }
+    .lomba-card.yel       i { color: #7b2d00; }
+    .lomba-card.all       i { color: var(--green-dark); }
+    .lomba-card strong { display: block; font-size: .88rem; font-weight: 700; }
+    .lomba-card small  { font-size: .72rem; color: #888; }
+    .btn-cetak-form {
+      margin-top: 10px; padding: 6px 14px; background: var(--green-mid); color: #fff;
+      border: none; border-radius: 8px; font-size: .78rem; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 5px; transition: background .2s;
+    }
+    .btn-cetak-form:hover { background: var(--green-dark); }
+
+    /* Preview area */
+    #previewArea { display: none; }
+    .preview-actions { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .btn-do-print {
+      padding: 10px 24px; background: var(--green-dark); color: #fff;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 700;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-back {
+      padding: 10px 20px; background: #f0f0f0; color: #555;
+      border: none; border-radius: 8px; font-size: .9rem; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .preview-wrap {
+      background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.1); padding: 32px;
+    }
+
+    /* ============ FORM PENILAIAN (print doc) ============ */
+    .form-doc { font-family: 'Poppins', sans-serif; }
+
+    .form-header { text-align: center; border-bottom: 3px double #1a472a; padding-bottom: 14px; margin-bottom: 18px; }
+    .form-header .org  { font-size: .8rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
+    .form-header h1    { font-size: 1.2rem; font-weight: 800; color: var(--green-dark); line-height: 1.3; margin: 4px 0; }
+    .form-header h2    { font-size: .95rem; font-weight: 700; }
+    .form-header .sub  { font-size: .78rem; color: #666; margin-top: 3px; }
+
+    .form-meta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 10px 24px;
+      font-size: .82rem; margin-bottom: 16px; border: 1px solid #ccc;
+      border-radius: 6px; padding: 12px 16px; background: #fafafa;
+      align-items: center;
+    }
+    .form-meta-row .meta-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .form-meta-row .meta-item.ttd { justify-content: flex-end; }
+    .meta-label { font-weight: 600; color: #555; flex-shrink: 0; }
+    .meta-line        { border-bottom: 1px solid #333; flex: 1; min-width: 80px; display: inline-block; }
+    .meta-line.panjang{ min-width: 160px; }
+    .meta-line.pendek { min-width: 70px; max-width: 90px; }
+
+    /* Kriteria box */
+    .kriteria-box {
+      border: 1px solid #ccc; border-radius: 8px; padding: 12px 16px;
+      margin-bottom: 16px; background: #fafff8;
+    }
+    .kriteria-title {
+      font-size: .88rem; font-weight: 700; color: #fff;
+      padding: 6px 12px; border-radius: 6px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .kriteria-title.tongkat   { background: #1b4332; }
+    .kriteria-title.semaphore { background: #1d3557; }
+    .kriteria-title.yel       { background: #7b2d00; }
+    .kriteria-list { display: flex; flex-wrap: wrap; gap: 8px; font-size: .8rem; }
+    .kriteria-item {
+      border: 1px solid #ccc; border-radius: 6px; padding: 5px 10px;
+      background: #fff; display: flex; align-items: center; gap: 6px;
+    }
+    .kriteria-item .k-name { font-weight: 600; }
+    .kriteria-item .k-max  { color: #888; font-size: .72rem; }
+
+    /* Tabel penilaian */
+    .form-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-bottom: 20px; }
+    .form-table th {
+      background: var(--green-dark); color: #fff;
+      padding: 8px 6px; text-align: center; border: 1px solid #1a472a;
+      font-size: .75rem; line-height: 1.3;
+    }
+    .form-table th.cat-t { background: #1b4332; }
+    .form-table th.cat-s { background: #1d3557; }
+    .form-table th.cat-m { background: #4a1942; }
+    .form-table th.cat-y { background: #7b2d00; }
+    .form-table td {
+      border: 1px solid #bbb; padding: 0; height: 28px; text-align: center; vertical-align: middle;
+    }
+    .form-table td.td-no   { width: 32px; font-weight: 600; background: #f5f5f5; }
+    .form-table td.td-regu { text-align: left; padding-left: 8px; font-weight: 600; min-width: 100px; background: #f9fdf9; }
+    .form-table td.td-isi  { background: #fff; min-width: 52px; }
+    .form-table td.td-total{ background: #fffde7; font-weight: 700; min-width: 52px; }
+    .form-table td.td-ttd  { background: #fff; min-width: 80px; }
+    .form-table tr:nth-child(even) td { background: #f7faf7; }
+    .form-table tr:nth-child(even) td.td-regu  { background: #f0f7f0; }
+    .form-table tr:nth-child(even) td.td-total { background: #fffde7; }
+    .form-table tr:nth-child(even) td.td-ttd   { background: #f7faf7; }
+
+    /* Catatan & TTD */
+    .form-notes {
+      border: 1px solid #ccc; border-radius: 6px; padding: 10px 14px;
+      margin-bottom: 20px; font-size: .8rem;
+    }
+    .form-notes-title { font-weight: 700; margin-bottom: 6px; color: #555; }
+    .notes-line { border-bottom: 1px solid #ddd; height: 22px; margin-bottom: 4px; }
+
+    .form-footer { display: flex; justify-content: space-between; margin-top: 24px; font-size: .8rem; }
+    .sign-box { text-align: center; min-width: 160px; }
+    .sign-box .sign-line { border-top: 1px solid #333; margin-top: 56px; padding-top: 4px; font-weight: 600; }
+
+    .page-break-before { page-break-before: always; }
+    .form-separator { border: none; border-top: 2px dashed #ccc; margin: 36px 0; }
+
+    /* ============ PRINT ============ */
+    @media print {
+      body { background: #fff !important; }
+      .screen-wrap > *:not(#previewArea) { display: none !important; }
+      #previewArea { display: block !important; }
+      .preview-actions { display: none !important; }
+      .preview-wrap { box-shadow: none; padding: 0; border-radius: 0; }
+      .form-table th, .form-table td { font-size: .7rem; padding: 0; height: 24px; }
+      .form-header h1 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="screen-wrap">
+  <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Papan Nilai</a>
+  <div class="page-title"><i class="fa-solid fa-file-pen" style="color:var(--green-mid)"></i> Form Penilaian Lapangan</div>
+  <div class="page-sub">Cetak lembaran penilaian kosong untuk petugas juri di lapangan</div>
+
+  <!-- PENGATURAN -->
+  <div class="settings-card">
+    <div class="settings-title"><i class="fa-solid fa-gear"></i> Pengaturan Dokumen</div>
+    <div class="settings-grid">
+      <div class="sg">
+        <label><i class="fa-solid fa-location-dot"></i> Kota / Tempat</label>
+        <input type="text" id="sCota" value="Lumajang" />
+      </div>
+      <div class="sg">
+        <label><i class="fa-solid fa-calendar-days"></i> Tanggal Kegiatan</label>
+        <input type="date" id="sTanggal" />
+      </div>
+      <div class="sg">
+        <label><i class="fa-solid fa-hashtag"></i> Jumlah Regu</label>
+        <input type="number" id="sJumlahRegu" value="20" min="1" max="50" />
+      </div>
+      <div class="sg">
+        <label><i class="fa-solid fa-user-check"></i> Nama Juri (opsional)</label>
+        <input type="text" id="sJuri" placeholder="Kosongkan jika belum ditentukan" />
+      </div>
+    </div>
+  </div>
+
+  <!-- PILIH LOMBA -->
+  <div class="lomba-grid" id="lombaGrid">
+    <div class="lomba-card all" onclick="showForm('all')">
+      <i class="fa-solid fa-layer-group"></i>
+      <strong>Semua Lomba</strong>
+      <small>4 lembar sekaligus</small>
+      <br/><button class="btn-cetak-form"><i class="fa-solid fa-print"></i> Cetak</button>
+    </div>
+    <div class="lomba-card tongkat" onclick="showForm('tongkat')">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <strong>Kreasi Tongkat</strong>
+      <small>Pionering</small>
+      <br/><button class="btn-cetak-form"><i class="fa-solid fa-print"></i> Cetak</button>
+    </div>
+    <div class="lomba-card semaphore" onclick="showForm('semaphore')">
+      <i class="fa-solid fa-flag"></i>
+      <strong>Sandi Semaphore</strong>
+      <small>Ketepatan & Kecepatan</small>
+      <br/><button class="btn-cetak-form"><i class="fa-solid fa-print"></i> Cetak</button>
+    </div>
+    <div class="lomba-card yel" onclick="showForm('yel')">
+      <i class="fa-solid fa-music"></i>
+      <strong>Yel-Yel</strong>
+      <small>Kreatifitas & Kekompakan</small>
+      <br/><button class="btn-cetak-form"><i class="fa-solid fa-print"></i> Cetak</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="previewArea">
+    <div class="preview-actions">
+      <button class="btn-do-print" onclick="window.print()"><i class="fa-solid fa-print"></i> Cetak Sekarang</button>
+      <button class="btn-back" onclick="backToGrid()"><i class="fa-solid fa-arrow-left"></i> Pilih Lomba Lain</button>
+    </div>
+    <div class="preview-wrap">
+      <div class="form-doc" id="formDoc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbwgXpvEmvjw9n2IzwmOIkIanip8YfhP-L-1a4Ys80CTdmLKAKbdSYwfbwqxmYiK5sCL/exec";
+  let dbData = []; // data dari spreadsheet
+
+  // Set default tanggal hari ini
+  document.getElementById("sTanggal").value = new Date().toISOString().split("T")[0];
+
+  // Fetch data regu dari database
+  async function fetchRegu() {
+    try {
+      const res = await fetch(API_URL, { method:"POST", body: JSON.stringify({ action:"getData" }) });
+      const json = await res.json();
+      if (json.success) dbData = json.data;
+    } catch(e) { /* offline, pakai nomor urut saja */ }
+  }
+  fetchRegu();
+
+  function getSettings() {
+    const tglRaw = document.getElementById("sTanggal").value;
+    return {
+      kota:       document.getElementById("sCota").value.trim() || "Lumajang",
+      tanggal:    tglRaw ? new Date(tglRaw + "T00:00:00").toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" }) : "-",
+      jumlahRegu: parseInt(document.getElementById("sJumlahRegu").value) || 20,
+      juri:       document.getElementById("sJuri").value.trim() || "_______________________",
+    };
+  }
+
+  // Ambil daftar regu dari DB, pisah putra/putri, urutkan by no
+  function getRegus(jenis) {
+    const filtered = dbData.filter(r => (r.jenisRegu || "Putra") === jenis)
+                           .sort((a,b) => a.no - b.no);
+    return filtered;
+  }
+
+  // Buat baris tabel — pakai data DB jika ada, fallback ke nomor urut
+  function buildRows(jenis, extraCols) {
+    const regus = getRegus(jenis);
+    if (regus.length > 0) {
+      return regus.map((r, i) => `
+      <tr>
+        <td class="td-no">${i + 1}</td>
+        <td class="td-regu">${r.nomorRegu}</td>
+        ${extraCols}
+      </tr>`).join("");
+    }
+    // fallback: baris kosong sesuai jumlah regu
+    const s = getSettings();
+    return Array.from({ length: s.jumlahRegu }, (_, i) => `
+    <tr>
+      <td class="td-no">${i + 1}</td>
+      <td class="td-regu"></td>
+      ${extraCols}
+    </tr>`).join("");
+  }
+
+  function showForm(type) {
+    document.getElementById("lombaGrid").style.display = "none";
+    document.getElementById("previewArea").style.display = "block";
+    const s = getSettings();
+    let html = "";
+    if (type === "all") {
+      html = buildTongkat(s,"Putra") + '<div class="page-break-before"></div>' +
+             buildTongkat(s,"Putri") + '<div class="page-break-before"></div>' +
+             buildSemaphore(s,"Putra") + '<div class="page-break-before"></div>' +
+             buildSemaphore(s,"Putri") + '<div class="page-break-before"></div>' +
+             buildYel(s,"Putra") + '<div class="page-break-before"></div>' +
+             buildYel(s,"Putri");
+    } else if (type === "tongkat")   html = buildTongkat(s,"Putra")   + '<div class="page-break-before"></div>' + buildTongkat(s,"Putri");
+    else if (type === "semaphore")   html = buildSemaphore(s,"Putra") + '<div class="page-break-before"></div>' + buildSemaphore(s,"Putri");
+    else if (type === "yel")         html = buildYel(s,"Putra")       + '<div class="page-break-before"></div>' + buildYel(s,"Putri");
+    document.getElementById("formDoc").innerHTML = html;
+    window.scrollTo(0, 0);
+  }
+
+  function backToGrid() {
+    document.getElementById("previewArea").style.display = "none";
+    document.getElementById("lombaGrid").style.display = "grid";
+  }
+
+  function jenisLabel(jenis) {
+    return jenis === "Putra"
+      ? '<span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:10px;font-size:.8rem">🔵 REGU PUTRA</span>'
+      : '<span style="background:#fce4ec;color:#c62828;padding:2px 10px;border-radius:10px;font-size:.8rem">🔴 REGU PUTRI</span>';
+  }
+
+  function header(s, judul, jenis) {
+    return `
+    <div class="form-header">
+      <div class="org">&#9670; Gerakan Pramuka &#9670;</div>
+      <h1>NILAI BAKAT PESTAMA II 2026</h1>
+      <h2>LEMBAR PENILAIAN &mdash; ${judul}</h2>
+      <div style="margin-top:6px">${jenisLabel(jenis)}</div>
+      <div class="sub">Lomba Pramuka Tingkat Penggalang SMP Swasta Se-Kabupaten Lumajang</div>
+    </div>`;
+  }
+
+  function kriteria(cls, icon, title, items) {
+    return `
+    <div class="kriteria-box">
+      <div class="kriteria-title ${cls}"><i class="fa-solid ${icon}"></i> ${title}</div>
+      <div class="kriteria-list">
+        ${items.map(it => `<div class="kriteria-item"><span class="k-name">${it.nama}</span><span class="k-max">maks ${it.max}</span></div>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  function notes() {
+    return `
+    <div class="form-notes">
+      <div class="form-notes-title"><i class="fa-solid fa-pen-to-square"></i> Catatan Juri:</div>
+      <div class="notes-line"></div>
+      <div class="notes-line"></div>
+    </div>`;
+  }
+
+  function footer(s) {
+    return `
+    <div class="form-footer">
+      <div class="sign-box">
+        <div>Mengetahui,</div>
+        <div>Ketua Panitia</div>
+        <div class="sign-line">( _____________________ )</div>
+      </div>
+      <div class="sign-box">
+        <div>${s.kota}, ${s.tanggal}</div>
+        <div>Juri / Petugas</div>
+        <div class="sign-line">( ${s.juri === "_______________________" ? "_____________________ " : s.juri} )</div>
+      </div>
+    </div>`;
+  }
+
+  // ---- TONGKAT ----
+  function buildTongkat(s, jenis) {
+    const extraCols = `<td class="td-isi"></td><td class="td-isi"></td><td class="td-isi"></td><td class="td-isi"></td><td class="td-total"></td><td class="td-ttd"></td>`;
+    return `
+    ${header(s, "KREASI TONGKAT (PIONERING)", jenis)}
+    ${kriteria("tongkat","fa-wand-magic-sparkles","Kriteria Penilaian",[
+      {nama:"Simpul",max:40},{nama:"Kreatifitas",max:30},{nama:"Kekuatan",max:20},{nama:"Kerapian",max:10}
+    ])}
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th>NO</th><th>NOMOR REGU</th>
+          <th class="cat-t">SIMPUL<br/><small>maks 40</small></th>
+          <th class="cat-t">KREATIFITAS<br/><small>maks 30</small></th>
+          <th class="cat-t">KEKUATAN<br/><small>maks 20</small></th>
+          <th class="cat-t">KERAPIAN<br/><small>maks 10</small></th>
+          <th class="cat-t">TOTAL<br/><small>maks 100</small></th>
+          <th>KET.</th>
+        </tr>
+      </thead>
+      <tbody>${buildRows(jenis, extraCols)}</tbody>
+    </table>
+    ${notes()}${footer(s)}`;
+  }
+
+  // ---- SEMAPHORE ----
+  function buildSemaphore(s, jenis) {
+    const extraCols = `<td class="td-isi"></td><td class="td-isi"></td><td class="td-total"></td><td class="td-ttd"></td>`;
+    return `
+    ${header(s, "SANDI SEMAPHORE", jenis)}
+    ${kriteria("semaphore","fa-flag","Kriteria Penilaian",[
+      {nama:"Ketepatan Jawaban",max:60},{nama:"Kecepatan Jawaban",max:40}
+    ])}
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th>NO</th><th>NOMOR REGU</th>
+          <th class="cat-s">KETEPATAN JAWABAN<br/><small>maks 60</small></th>
+          <th class="cat-s">KECEPATAN JAWABAN<br/><small>maks 40</small></th>
+          <th class="cat-s">TOTAL<br/><small>maks 100</small></th>
+          <th>KET.</th>
+        </tr>
+      </thead>
+      <tbody>${buildRows(jenis, extraCols)}</tbody>
+    </table>
+    ${notes()}${footer(s)}`;
+  }
+
+  // ---- YEL-YEL ----
+  function buildYel(s, jenis) {
+    const extraCols = `<td class="td-isi"></td><td class="td-isi"></td><td class="td-total"></td><td class="td-ttd"></td>`;
+    return `
+    ${header(s, "YEL-YEL", jenis)}
+    ${kriteria("yel","fa-music","Kriteria Penilaian",[
+      {nama:"Kreatifitas",max:60},{nama:"Kekompakan",max:40}
+    ])}
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th>NO</th><th>NOMOR REGU</th>
+          <th class="cat-y">KREATIFITAS<br/><small>maks 60</small></th>
+          <th class="cat-y">KEKOMPAKAN<br/><small>maks 40</small></th>
+          <th class="cat-y">TOTAL<br/><small>maks 100</small></th>
+          <th>KET.</th>
+        </tr>
+      </thead>
+      <tbody>${buildRows(jenis, extraCols)}</tbody>
+    </table>
+    ${notes()}${footer(s)}`;
+  }
+</script>
+</body>
+</html>

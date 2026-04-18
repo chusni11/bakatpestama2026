@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Nilai Bakat Pestama II 2026</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="admin-body">
+
+  <!-- LOGIN MODAL -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-logo"><i class="fa-solid fa-campground"></i></div>
+      <h2>Admin Login</h2>
+      <p>Masukkan password untuk mengakses panel admin</p>
+      <div class="input-group">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="passwordInput" placeholder="Password Admin" onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <div id="loginError" class="login-error" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span id="loginErrorMsg">Password salah! Silakan coba lagi.</span>
+      </div>
+      <div id="loginSuccess" class="login-success" style="display:none">
+        <i class="fa-solid fa-circle-check"></i> Login berhasil! Mengalihkan...
+      </div>
+      <button class="btn-login" id="btnLogin" onclick="doLogin()">
+        <span id="btnLoginContent"><i class="fa-solid fa-right-to-bracket"></i> Masuk</span>
+        <span id="btnLoginLoading" style="display:none"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...</span>
+      </button>
+      <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Kembali ke Papan Nilai</a>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" style="display:none">
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <i class="fa-solid fa-campground"></i>
+        <span>Admin Panel &mdash; Nilai Bakat Pestama II 2026</span>
+      </div>
+      <div class="admin-header-right">
+        <a href="index.html" class="btn-sm"><i class="fa-solid fa-eye"></i> Lihat Papan Nilai</a>
+        <button class="btn-sm danger" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </header>
+
+    <div class="admin-container">
+      <!-- FORM INPUT NILAI (hidden by default) -->
+      <div class="admin-card form-card" id="formCard" style="display:none">
+        <div class="form-card-header">
+          <h3><i class="fa-solid fa-pen-to-square"></i> <span id="formTitle">Tambah Data Regu</span></h3>
+          <button class="btn-close-form" onclick="closeForm()" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <input type="hidden" id="editRowIndex" value="" />
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>No</label>
+            <input type="number" id="fNo" placeholder="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Nomor Regu</label>
+            <input type="text" id="fRegu" placeholder="REGU 01" />
+          </div>
+          <div class="form-group">
+            <label>Jenis Regu</label>
+            <select id="fJenisRegu">
+              <option value="Putra">🔵 Putra</option>
+              <option value="Putri">🔴 Putri</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2">
+            <label>Nama Sekolah</label>
+            <input type="text" id="fNamaSekolah" placeholder="SMP ... " />
+          </div>
+        </div>
+
+        <!-- KREASI TONGKAT -->
+        <div class="form-section tongkat">
+          <div class="form-section-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Kreasi Tongkat (Pionering)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Simpul <span class="max-val">max 40</span></label>
+              <input type="number" id="fSimpul" placeholder="0" min="0" max="40" oninput="clamp(this,40)" />
+            </div>
+            <div class="form-group">
+              <label>Kreatifitas <span class="max-val">max 30</span></label>
+              <input type="number" id="fKreatifitasTongkat" placeholder="0" min="0" max="30" oninput="clamp(this,30)" />
+            </div>
+            <div class="form-group">
+              <label>Kekuatan <span class="max-val">max 20</span></label>
+              <input type="number" id="fKekuatan" placeholder="0" min="0" max="20" oninput="clamp(this,20)" />
+            </div>
+            <div class="form-group">
+              <label>Kerapian <span class="max-val">max 10</span></label>
+              <input type="number" id="fKerapian" placeholder="0" min="0" max="10" oninput="clamp(this,10)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SANDI SEMAPHORE -->
+        <div class="form-section semaphore">
+          <div class="form-section-title"><i class="fa-solid fa-flag"></i> Sandi Semaphore</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ketepatan Jawaban <span class="max-val">max 60</span></label>
+              <input type="number" id="fKetepatanSemaphore" placeholder="0" min="0" max="60" oninput="clamp(this,60)" />
+            </div>
+            <div class="form-group">
+              <label>Kecepatan Jawaban <span class="max-val">max 40</span></label>
+              <input type="number" id="fKecepatanSemaphore" placeholder="0" min="0" max="40" oninput="clamp(this,40)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- YEL-YEL -->
+        <div class="form-section yel">
+          <div class="form-section-title"><i class="fa-solid fa-music"></i> Yel-Yel</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Kreatifitas <span class="max-val">max 60</span></label>
+              <input type="number" id="fKreatifitasYel" placeholder="0" min="0" max="60" oninput="clamp(this,60)" />
+            </div>
+            <div class="form-group">
+              <label>Kekompakan <span class="max-val">max 40</span></label>
+              <input type="number" id="fKekompakan" placeholder="0" min="0" max="40" oninput="clamp(this,40)" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-save" id="btnSave" onclick="saveData()">
+            <span id="btnSaveContent"><i class="fa-solid fa-floppy-disk"></i> Simpan</span>
+            <span id="btnSaveLoading" style="display:none"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...</span>
+          </button>
+          <button class="btn-cancel" id="btnCancel" onclick="closeForm()"><i class="fa-solid fa-xmark"></i> Batal</button>
+        </div>
+        <div id="formMsg" class="form-msg" style="display:none"></div>
+      </div>
+
+      <!-- DATA TABLE -->
+      <div class="admin-card">
+        <div class="table-header">
+          <h3><i class="fa-solid fa-table"></i> Data Nilai Regu</h3>
+          <div class="table-header-actions">
+            <button class="btn-add" onclick="openAddForm()"><i class="fa-solid fa-plus"></i> Tambah Regu</button>
+            <button class="refresh-btn" onclick="loadAdminData()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="adminTable">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>NOMOR REGU</th>
+                <th>JENIS</th>
+                <th>SEKOLAH</th>
+                <th>TONGKAT</th>
+                <th>SEMAPHORE</th>
+                <th>YEL-YEL</th>
+                <th>TOTAL</th>
+                <th>AKSI</th>
+              </tr>
+            </thead>
+            <tbody id="adminTableBody">
+              <tr><td colspan="9" class="loading-row"><i class="fa-solid fa-spinner fa-spin"></i> Memuat...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwgXpvEmvjw9n2IzwmOIkIanip8YfhP-L-1a4Ys80CTdmLKAKbdSYwfbwqxmYiK5sCL/exec";
+    checkLogin();
+  </script>
+</body>
+</html>
