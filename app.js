@@ -311,17 +311,21 @@ function getSekolahRanking(data) {
   return Object.values(map).sort((a, b) => b.total - a.total);
 }
 
+// Cache ranking sekolah agar stats bar dan podium selalu sinkron
+let _sekolahRanking = [];
+
 function renderStats(data) {
-  const sorted = getSekolahRanking(data);
+  // Hitung ranking dan simpan ke cache — renderPodium akan pakai cache ini
+  _sekolahRanking = getSekolahRanking(data);
   document.getElementById("totalRegu").textContent = data.length;
-  document.getElementById("juara1").textContent = sorted[0]?.namaSekolah || "-";
-  document.getElementById("juara2").textContent = sorted[1]?.namaSekolah || "-";
-  document.getElementById("juara3").textContent = sorted[2]?.namaSekolah || "-";
+  document.getElementById("juara1").textContent = _sekolahRanking[0]?.namaSekolah || "-";
+  document.getElementById("juara2").textContent = _sekolahRanking[1]?.namaSekolah || "-";
+  document.getElementById("juara3").textContent = _sekolahRanking[2]?.namaSekolah || "-";
 }
 
 function renderPodium(data) {
-  // Gunakan hasil ranking yang sama untuk stats dan podium
-  const sorted = getSekolahRanking(data);
+  // Selalu pakai cache dari renderStats agar stats bar dan podium menampilkan data yang sama
+  const sorted = _sekolahRanking;
   if (!sorted.length) return;
   document.getElementById("podiumSection").style.display = "block";
 
