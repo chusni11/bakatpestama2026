@@ -299,7 +299,12 @@ function getSekolahRanking(data) {
   data.forEach(r => {
     const raw = (r.namaSekolah || r.nomorRegu).trim();
     const key = raw.toLowerCase(); // normalisasi agar beda kapitalisasi/spasi tetap digabung
-    if (!map[key]) map[key] = { namaSekolah: raw, total: 0, regu: [] };
+    if (!map[key]) {
+      map[key] = { namaSekolah: raw, total: 0, regu: [] };
+    } else if (!map[key].namaSekolah && raw) {
+      // Gunakan nama non-kosong jika sebelumnya kosong
+      map[key].namaSekolah = raw;
+    }
     map[key].total += r.totalAkhir;
     map[key].regu.push(r);
   });
@@ -315,11 +320,12 @@ function renderStats(data) {
 }
 
 function renderPodium(data) {
+  // Gunakan hasil ranking yang sama untuk stats dan podium
   const sorted = getSekolahRanking(data);
   if (!sorted.length) return;
   document.getElementById("podiumSection").style.display = "block";
 
-  const fmt = (s) => s ? `${s.namaSekolah}` : "-";
+  const fmt = (s) => s ? s.namaSekolah : "-";
   const fmtScore = (s) => s ? `${s.total} poin` : "0";
   if (sorted[0]) { document.getElementById("p1name").textContent = fmt(sorted[0]); document.getElementById("p1score").textContent = fmtScore(sorted[0]); }
   if (sorted[1]) { document.getElementById("p2name").textContent = fmt(sorted[1]); document.getElementById("p2score").textContent = fmtScore(sorted[1]); }
