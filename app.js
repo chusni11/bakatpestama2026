@@ -297,8 +297,9 @@ function getSekolahRanking(data) {
   // Gabungkan nilai putra + putri per sekolah
   const map = {};
   data.forEach(r => {
-    const key = (r.namaSekolah || r.nomorRegu).trim();
-    if (!map[key]) map[key] = { namaSekolah: key, total: 0, regu: [] };
+    const raw = (r.namaSekolah || r.nomorRegu).trim();
+    const key = raw.toLowerCase(); // normalisasi agar beda kapitalisasi/spasi tetap digabung
+    if (!map[key]) map[key] = { namaSekolah: raw, total: 0, regu: [] };
     map[key].total += r.totalAkhir;
     map[key].regu.push(r);
   });
